@@ -61,6 +61,17 @@ const Widget = () => {
     }
   }, [error]);
 
+  const [showConnectButton, setShowConnectButton] = useState(false);
+  const [showSendButton, setShowSendButton] = useState(false);
+
+  useEffect(() => {
+    setShowConnectButton(isAmountEntered);
+  }, [isAmountEntered]);
+
+  useEffect(() => {
+    setShowSendButton(isConnected);
+  }, [isConnected]);
+
   return (
     <div className="bg-white border-gray-300 border rounded-lg shadow-lg p-6 max-w-md mx-auto">
       <h2 className="text-gray-800 text-2xl font-semibold mb-4">
@@ -102,29 +113,32 @@ const Widget = () => {
       </div>
 
       <div className="mb-4">
-        {isConnected && (
-          <p className="text-gray-700 mb-2">
-            Connected to <span className="font-semibold">{address}</span>
-          </p>
-        )}
-        <ConnectKitButton.Custom>
-          {({ isConnected, show, chain }) => (
-            <button
-              onClick={show}
-              disabled={!isAmountEntered}
-              className={`bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded w-full transition duration-300 ease-in-out ${
-                !isAmountEntered ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              {isConnected
-                ? `Connected Successfully to ${chain.name}`
-                : "Connect Wallet"}
-            </button>
-          )}
-        </ConnectKitButton.Custom>
+        <div
+          className={`transition-all ease-in-out duration-300 ${
+            showConnectButton ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
+          <ConnectKitButton.Custom>
+            {({ isConnected, show, chain, truncatedAddress }) => (
+              <button
+                onClick={show}
+                disabled={!isAmountEntered}
+                className={`bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded w-full transition duration-300 ease-in-out ${
+                  !isAmountEntered ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
+                {isConnected ? `${truncatedAddress}` : "Connect Wallet"}
+              </button>
+            )}
+          </ConnectKitButton.Custom>
+        </div>
       </div>
 
-      <div>
+      <div
+        className={`transition-all ease-in-out duration-300 ${
+          showSendButton ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
         <button
           className={`bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded w-full transition duration-300 ease-in-out ${
             !isConnected || !isAmountEntered
