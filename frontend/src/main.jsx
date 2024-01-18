@@ -7,8 +7,8 @@ import {
   ConnectKitProvider,
   getDefaultConfig,
 } from "connectkit";
-import { sepolia ,arbitrumSepolia} from "wagmi/chains";
-const chains = [arbitrumSepolia] 
+import { sepolia } from "wagmi/chains";
+const chains = [sepolia] 
 
 import {
   BrowserRouter as Router,
