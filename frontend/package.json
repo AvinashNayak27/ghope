@@ -10,8 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "connectkit": "^1.6.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "viem": "1.x",
+    "wagmi": "1.x"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
