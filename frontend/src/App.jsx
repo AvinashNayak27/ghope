@@ -1,10 +1,9 @@
-import './App.css'
-import Widget from './components/Widget'
+import "./App.css";
 
 export default function App() {
   return (
     <div className="App">
-      <Widget />
+
     </div>
-  )
+  );
 }

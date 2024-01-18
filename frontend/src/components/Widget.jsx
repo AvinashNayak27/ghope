@@ -2,8 +2,11 @@ import React, { useState, useEffect } from "react";
 import { ConnectKitButton } from "connectkit";
 import { useAccount } from "wagmi";
 import { useContractWrite, usePrepareContractWrite } from "wagmi";
+import { useParams } from "react-router-dom";
 
 const Widget = () => {
+  const params = useParams()
+  const recipient = params.recipient
   const [amount, setAmount] = useState("");
   const [selectedToken, setSelectedToken] = useState("GHO");
   const tokens = {
@@ -34,7 +37,6 @@ const Widget = () => {
       type: "function",
     },
   ];
-  const recipient = "0xD81AC8dC178c16827641EFB94aF24AFeFF4DC72c";
 
   const isValidAmount = !isNaN(parseFloat(amount));
   const selectedTokenInfo = tokens[selectedToken];
@@ -71,6 +73,22 @@ const Widget = () => {
   useEffect(() => {
     setShowSendButton(isConnected);
   }, [isConnected]);
+
+
+ // if useparams doesn't start with 0x, display error
+
+  if (recipient.length < 42) {
+    return (
+      <div className="bg-white border-gray-300 border rounded-lg shadow-lg p-6 max-w-md mx-auto">
+        <h2 className="text-gray-800 text-2xl font-semibold mb-4">
+          Error
+        </h2>
+        <p className="text-gray-800 text-2xl font-semibold mb-4">
+          Please enter a valid Ethereum address
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white border-gray-300 border rounded-lg shadow-lg p-6 max-w-md mx-auto">

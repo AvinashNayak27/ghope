@@ -7,8 +7,15 @@ import {
   ConnectKitProvider,
   getDefaultConfig,
 } from "connectkit";
-import { sepolia } from "wagmi/chains";
-const chains = [sepolia] 
+import { sepolia ,arbitrumSepolia} from "wagmi/chains";
+const chains = [arbitrumSepolia] 
+
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route
+} from 'react-router-dom';
+
 
 
 const config = createConfig(
@@ -23,12 +30,18 @@ const config = createConfig(
     chains:chains,
   })
 );
+import Widget from "./components/Widget.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <WagmiConfig config={config}>
       <ConnectKitProvider>
-        <App />
+        <Router>
+          <Routes>
+            <Route path="/" element={<App />} />
+            <Route path="/:recipient" element={<Widget />} />
+          </Routes>
+        </Router>
       </ConnectKitProvider>
     </WagmiConfig>
   </React.StrictMode>
