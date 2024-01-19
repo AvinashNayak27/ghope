@@ -22,10 +22,10 @@ const NavigationBar = () => {
                   Home
                 </Link>
                 <Link
-                to="/create" 
-                className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                  to="/create"
+                  className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                 >
-                Create payment link
+                  Create payment link
                 </Link>
                 <Link
                   to="/view-products"

@@ -13,6 +13,9 @@ import LandingPage from "./components/Landing.jsx";
 import CreateAppForm from "./components/Create.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import Viewapps from "./components/Viewapps.jsx";
+import { AuthProvider } from "./AuthContext.jsx";
+import axios from "axios";
+import { useAuth } from "./AuthContext.jsx";
 
 const smartWalletOptions = {
   factoryAddress: "0x97a277e9b325785b9a4c33d4e39c8d6193b54f83",
@@ -23,7 +26,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ThirdwebProvider
       activeChain={Sepolia}
-      clientId="77f35f00fe1757e3cbd833a9ab3b6375"
+      clientId="8c01910f5d85805c35ee554294b9e5a4"
       supportedWallets={[
         smartWallet(localWallet(), smartWalletOptions),
         smartWallet(
@@ -36,14 +39,16 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         ),
       ]}
     >
-      <Router>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/create" element={<CreateAppForm />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/view-products" element={<Viewapps />} />
-        </Routes>
-      </Router>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/create" element={<CreateAppForm />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/view-products" element={<Viewapps />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
     </ThirdwebProvider>
   </React.StrictMode>
 );

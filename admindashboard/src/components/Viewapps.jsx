@@ -1,7 +1,17 @@
 import React from 'react';
 import NavigationBar from './Navbar';
+import { useAuth } from '../AuthContext';
+import axios from 'axios';
+
 
 const ViewApps = () => {
+    const { email, address } = useAuth();
+     axios.get('http://localhost:3000/payment-ids-by-user?email=dummy@example.com')
+        .then((response) => {
+            console.log(response.data);
+        }, (error) => {
+            console.log(error);
+        });
     return (
         <div className="min-h-screen bg-gray-800 text-white flex flex-col items-center p-4">
             <NavigationBar />
