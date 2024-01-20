@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import { useAddress } from "@thirdweb-dev/react";
-import { ConnectWallet } from "@thirdweb-dev/react";
 import NavigationBar from "./Navbar";
+import axios from "axios";
+import { useAuth } from "../AuthContext";
+import { v4 as uuidv4 } from 'uuid';
 
 const CreateAppForm = () => {
+  const { email } = useAuth();
   const [formData, setFormData] = useState({
     appName: "",
     amount: "",
@@ -15,10 +18,48 @@ const CreateAppForm = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const getUser = async () => {
+    const response = await axios.get(
+      `http://localhost:3000/user-by-email?email=${email}`
+    );
+    console.log(response?.data);
+    
+    return response?.data;
+  };
+
+  const createPaymentID = async (productName, owner, amount, token, network,uid) => {
+    try {
+      const response = await axios.post('http://localhost:3000/create-payment-id', {
+        productName,
+        owner,
+        amount,
+        token,
+        network,
+        uid
+      });
+      console.log('PaymentID created:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating payment ID:', error);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission logic here
-    console.log(formData);
+    const { appName, amount, token, network } = formData;
+    const uniquepaymentId = uuidv4();
+    const user = await getUser();
+    if (user && user._id) {
+      const paymentId = await createPaymentID(
+        appName,
+        user._id,
+        amount,
+        token,
+        network,
+        uniquepaymentId
+      );
+      console.log(paymentId);
+    }
   };
 
   const address = useAddress();

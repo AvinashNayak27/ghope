@@ -15,12 +15,13 @@ import Dashboard from "./components/Dashboard.jsx";
 import Viewapps from "./components/Viewapps.jsx";
 import { AuthProvider } from "./AuthContext.jsx";
 import axios from "axios";
-import { useAuth } from "./AuthContext.jsx";
 
 const smartWalletOptions = {
   factoryAddress: "0x97a277e9b325785b9a4c33d4e39c8d6193b54f83",
   gasless: true,
 };
+
+const baseURL = "http://localhost:3000";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -33,6 +34,25 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           embeddedWallet({
             auth: {
               options: ["email", "google"],
+            },
+            onAuthSuccess: async (user) => {
+              const email = user.storedToken.authDetails.email;
+              const walletAddress = user.walletDetails.walletAddress
+
+              const userExists = await axios.get(
+                `${baseURL}/user-exists?email=${email}`
+              );
+
+              if (userExists.data) {
+                return;
+              }
+
+              const response = await axios.post(`${baseURL}/create-user`, {
+                email,
+                walletAddress,
+              });
+
+              console.log(response);
             },
           }),
           smartWalletOptions

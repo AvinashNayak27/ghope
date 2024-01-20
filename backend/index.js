@@ -120,17 +120,35 @@ app.post("/create-user", async (req, res) => {
 });
 
 app.post("/create-payment-id", async (req, res) => {
-  const { productName, owner, amount, token, network, uid } = req.body;
-  const paymentID = await createPaymentID(
-    productName,
-    owner,
-    amount,
-    token,
-    network,
-    uid
-  );
-  res.send(paymentID)
+  try {
+    const { productName, owner, amount, token, network, uid } = req.body;
+    const paymentID = await createPaymentID(
+      productName,
+      owner,
+      amount,
+      token,
+      network,
+      uid
+    );
+    res.send(paymentID);
+  } catch (error) {
+    // Log the error for server-side debugging
+    console.error("Error occurred in /create-payment-id:", error);
+
+    // Send an error response to the client
+    res.status(500).send({ error: "An error occurred while creating the payment ID." });
+  }
 });
+
+
+app.post("/update-user-wallet", async (req, res) => {
+  const { email, walletAddress } = req.body;
+  const user = await getUserByEmail(email);
+  user.walletAddress = walletAddress;
+  await user.save();
+  res.send(user);
+}
+);
 
 app.get("/users", async (req, res) => {
   const users = await getUsers();
@@ -141,6 +159,17 @@ app.get("/user-by-email", async (req, res) => {
   const { email } = req.query;
   const user = await getUserByEmail(email);
   res.send(user);
+});
+
+
+app.get("/user-exists", async (req, res) => {
+  const { email } = req.query;
+  const user = await getUserByEmail(email);
+  if (user) {
+    res.send(true);
+  } else {
+    res.send(false);
+  }
 });
 
 app.get("/payment-ids-by-user", async (req, res) => {

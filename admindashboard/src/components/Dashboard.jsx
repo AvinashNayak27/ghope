@@ -1,9 +1,32 @@
-import React from "react";
+import React, { useEffect } from "react";
 import NavigationBar from "./Navbar";
 import { useAuth } from "../AuthContext";
+import axios from "axios";
 
 const Dashboard = () => {
   const { email, address } = useAuth();
+
+  const userDatais = async () => {
+    const response = await axios.get(
+      `http://localhost:3000/user-by-email?email=${email}`
+    );
+    if (response.data.walletAddress != address) {
+      const response = await axios.post(
+        `http://localhost:3000/update-user-wallet`,
+        {
+          email,
+          walletAddress: address,
+        }
+      );
+    }
+  }
+
+  useEffect(() => {
+    if (email) {
+      userDatais();
+    }
+  }
+    , [email]);
 
   return (
     <div className="min-h-screen bg-gray-800 text-white flex flex-col items-center p-4">
