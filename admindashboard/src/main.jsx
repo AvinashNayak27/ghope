@@ -51,8 +51,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 email,
                 walletAddress,
               });
-
-              console.log(response);
+              console.log("User created:", response.data);
             },
           }),
           smartWalletOptions

@@ -7,6 +7,30 @@ import { v4 as uuidv4 } from "uuid";
 
 const CreateAppForm = () => {
   const { email } = useAuth();
+  const address = useAddress();
+
+  const userDatais = async () => {
+    const response = await axios.get(
+      `http://localhost:3000/user-by-email?email=${email}`
+    );
+    if (response.data.walletAddress != address) {
+      const response = await axios.post(
+        `http://localhost:3000/update-user-wallet`,
+        {
+          email,
+          walletAddress: address,
+        }
+      );
+      console.log("User updated:", response.data);
+    }
+  };
+
+  React.useEffect(() => {
+    if (email) {
+      userDatais();
+    }
+  }, [email]);
+
   const [formData, setFormData] = useState({
     appName: "",
     amount: "",
@@ -57,7 +81,7 @@ const CreateAppForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { appName, amount, token, network } = formData;
-    console.log(formData)
+    console.log(formData);
     const uniquepaymentId = uuidv4();
     const user = await getUser();
     if (user && user._id) {
@@ -76,7 +100,7 @@ const CreateAppForm = () => {
     }
   };
 
-  const address = useAddress();
+
   // Define your token and network options
   const TokenList = ["GHO", "USDC", "USDT", "DAI"];
   const Networks = ["Sepolia", "Arbitrum Sepolia", "Mumbai", "Optimism Goerli"];

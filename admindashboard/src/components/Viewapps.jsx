@@ -17,8 +17,9 @@ const ProductCard = ({ product }) => {
         Network: {product.network}
       </p>
       <p className="text-gray-700 dark:text-gray-300">
-        Payment Ref: {product.uniquePaymentRef}
-      </p>
+  Payment Ref: <a href={`http://localhost:5173/pay/${product.uniquePaymentRef}`} target="_blank">{product.uniquePaymentRef}</a>
+</p>
+
     </div>
   );
 };
