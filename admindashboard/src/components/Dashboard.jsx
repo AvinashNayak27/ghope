@@ -100,11 +100,9 @@ const Dashboard = () => {
                   <Web3Button
                     contractAddress={GHOAddress}
                     action={() => setShowInput(true)}
-                    isDisabled={tokenInfo?.displayValue === "0"}
+                    isDisabled={tokenInfo?.displayValue === "0.0"}
                   >
-                    {tokenInfo?.displayValue.toString() === "0.0"
-                      ? "🚫 No Balance"
-                      : "Transfer Tokens"}
+                    Transfer Tokens
                   </Web3Button>
                 )}
                 {isLoading && (
@@ -133,14 +131,11 @@ const Dashboard = () => {
                   </div>
                 )}
               </div>
-
-
             </div>
           </div>
         )}
       </div>
     </div>
-
   );
 };
 
