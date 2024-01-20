@@ -88,7 +88,7 @@ const getUserByEmail = async (email) => {
     if (user) {
       return user;
     } else {
-      console.log("No user found with that email.");
+      res.send("No user found with that email.");
       return null;
     }
   } catch (error) {
@@ -136,10 +136,11 @@ app.post("/create-payment-id", async (req, res) => {
     console.error("Error occurred in /create-payment-id:", error);
 
     // Send an error response to the client
-    res.status(500).send({ error: "An error occurred while creating the payment ID." });
+    res
+      .status(500)
+      .send({ error: "An error occurred while creating the payment ID." });
   }
 });
-
 
 app.post("/update-user-wallet", async (req, res) => {
   const { email, walletAddress } = req.body;
@@ -147,8 +148,7 @@ app.post("/update-user-wallet", async (req, res) => {
   user.walletAddress = walletAddress;
   await user.save();
   res.send(user);
-}
-);
+});
 
 app.get("/users", async (req, res) => {
   const users = await getUsers();
@@ -160,7 +160,6 @@ app.get("/user-by-email", async (req, res) => {
   const user = await getUserByEmail(email);
   res.send(user);
 });
-
 
 app.get("/user-exists", async (req, res) => {
   const { email } = req.query;
@@ -182,6 +181,10 @@ app.get("/payment-ids-by-user", async (req, res) => {
 app.get("/payment-id", async (req, res) => {
   const { uid } = req.query;
   const paymentID = await PaymentID.findOne({ uniquePaymentRef: uid });
-  res.send(paymentID);
+  if (paymentID) {
+    res.send(paymentID);
+  } else {
+    res.send("No payment ID found with that UID.");
+  }
 });
 app.listen(3000, () => console.log("Server running on port 3000"));
