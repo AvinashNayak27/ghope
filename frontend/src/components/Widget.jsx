@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { ConnectKitButton } from "connectkit";
 import { useAccount } from "wagmi";
-import { useContractWrite, usePrepareContractWrite } from "wagmi";
-import { useParams } from "react-router-dom";
+import { useContractWrite, usePrepareContractWrite, useWaitForTransaction } from "wagmi";
 
-const Widget = () => {
-  const params = useParams()
-  const recipient = params.recipient
-  const [amount, setAmount] = useState("");
-  const [selectedToken, setSelectedToken] = useState("GHO");
+const Widget = ({ amount, recipient, token }) => {
+  const { isConnected } = useAccount();
+  const isAmountEntered = amount && amount > 0;
+
+  // Define the token details
   const tokens = {
     GHO: {
       address: "0xc4bF5CbDaBE595361438F8c6a187bDc330539c60",
@@ -23,8 +22,7 @@ const Widget = () => {
       decimals: 6,
     },
   };
-  const { address, isConnected } = useAccount();
-  const isAmountEntered = amount.trim() !== "";
+
   const ERC20_ABI = [
     {
       inputs: [
@@ -38,8 +36,10 @@ const Widget = () => {
     },
   ];
 
+
+  const selectedTokenInfo = tokens['GHO'];
   const isValidAmount = !isNaN(parseFloat(amount));
-  const selectedTokenInfo = tokens[selectedToken];
+  const [email, setEmail] = useState("");
 
   const { config } = usePrepareContractWrite(
     recipient && isValidAmount
@@ -49,13 +49,28 @@ const Widget = () => {
           functionName: "transfer",
           args: [
             recipient,
-            amount.toString() * 10 ** selectedTokenInfo.decimals,
+            // Ensure proper conversion to the correct decimal
+            (parseFloat(amount) * Math.pow(10, selectedTokenInfo.decimals)).toString(),
           ],
         }
       : undefined
   );
 
-  const { write, error } = useContractWrite(config);
+  const { writeAsync, error } = useContractWrite(config);
+  const [transactionHash, setTransactionHash] = useState(null);
+  const { data, isError, isLoading } = useWaitForTransaction({
+    hash: transactionHash,
+  });
+
+  const handleTransactionSubmit = async () => {
+    if (!writeAsync) return;
+    try {
+      const tx = await writeAsync();
+      setTransactionHash(tx.hash);
+    } catch (error) {
+      console.error("Transaction error:", error);
+    }
+  };
 
   useEffect(() => {
     if (error) {
@@ -63,112 +78,64 @@ const Widget = () => {
     }
   }, [error]);
 
-  const [showConnectButton, setShowConnectButton] = useState(false);
-  const [showSendButton, setShowSendButton] = useState(false);
-
-  useEffect(() => {
-    setShowConnectButton(isAmountEntered);
-  }, [isAmountEntered]);
-
-  useEffect(() => {
-    setShowSendButton(isConnected);
-  }, [isConnected]);
-
-
- // if useparams doesn't start with 0x, display error
-
-  if (recipient.length < 42) {
-    return (
-      <div className="bg-white border-gray-300 border rounded-lg shadow-lg p-6 max-w-md mx-auto">
-        <h2 className="text-gray-800 text-2xl font-semibold mb-4">
-          Error
-        </h2>
-        <p className="text-gray-800 text-2xl font-semibold mb-4">
-          Please enter a valid Ethereum address
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="bg-white border-gray-300 border rounded-lg shadow-lg p-6 max-w-md mx-auto">
-      <h2 className="text-gray-800 text-2xl font-semibold mb-4">
-        Transfer Tokens
-      </h2>
-
-      <div className="flex space-x-4 mb-4">
-        <div className="flex-1">
-          <label htmlFor="amount" className="text-gray-700 block mb-2">
-            Amount:
-          </label>
-          <input
-            type="number"
-            id="amount"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="w-full p-2 border-gray-300 border rounded focus:ring focus:ring-blue-200 focus:border-blue-300"
-            placeholder="0.0"
-          />
-        </div>
-
-        <div className="flex-1">
-          <label htmlFor="token" className="text-gray-700 block mb-2">
-            Token:
-          </label>
-          <select
-            id="token"
-            value={selectedToken}
-            onChange={(e) => setSelectedToken(e.target.value)}
-            className="w-full p-2 border-gray-300 border rounded focus:ring focus:ring-blue-200 focus:border-blue-300"
-          >
-            {Object.keys(tokens).map((token) => (
-              <option key={token} value={token}>
-                {token}
-              </option>
-            ))}
-          </select>
-        </div>
+    <div className="bg-gray-800 text-white border-gray-600 border rounded-lg shadow-lg p-6 max-w-md mx-auto">
+      <div className="mb-4">
+        <label htmlFor="email" className="block text-sm font-medium text-gray-300">
+          Email Address:
+        </label>
+        <input
+          type="email"
+          id="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          placeholder="you@example.com"
+        />
       </div>
 
       <div className="mb-4">
-        <div
-          className={`transition-all ease-in-out duration-300 ${
-            showConnectButton ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-          }`}
-        >
-          <ConnectKitButton.Custom>
-            {({ isConnected, show, chain, truncatedAddress }) => (
-              <button
-                onClick={show}
-                disabled={!isAmountEntered}
-                className={`bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded w-full transition duration-300 ease-in-out ${
-                  !isAmountEntered ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-              >
-                {isConnected ? `${truncatedAddress}` : "Connect Wallet"}
-              </button>
-            )}
-          </ConnectKitButton.Custom>
-        </div>
+        <ConnectKitButton.Custom>
+          {({ isConnected, show, chain, truncatedAddress }) => (
+            <button
+              onClick={show}
+              className={`py-2 px-4 rounded-lg font-bold text-white w-full transition duration-300 ease-in-out ${
+                isConnected ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-500 hover:bg-blue-600"
+              }`}
+            >
+              {isConnected ? `${truncatedAddress}` : "Connect Wallet"}
+            </button>
+          )}
+        </ConnectKitButton.Custom>
       </div>
 
-      <div
-        className={`transition-all ease-in-out duration-300 ${
-          showSendButton ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-        }`}
-      >
+      <div>
         <button
-          className={`bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded w-full transition duration-300 ease-in-out ${
-            !isConnected || !isAmountEntered
-              ? "opacity-50 cursor-not-allowed"
-              : ""
+          className={`py-2 px-4 rounded-lg font-bold text-white w-full transition duration-300 ease-in-out ${
+            isConnected && isAmountEntered ? "bg-green-600 hover:bg-green-700" : "bg-green-500 hover:bg-green-600 opacity-50 cursor-not-allowed"
           }`}
           disabled={!isConnected || !isAmountEntered}
-          onClick={() => write?.()}
+          onClick={handleTransactionSubmit}
         >
           Send
         </button>
       </div>
+
+      {isLoading && <div>Processing…</div>}
+      {isError && <div>Transaction error</div>}
+      {data && (
+        <p className="text-green-600">
+          Transaction successful! View on{" "}
+          <a
+            href={`https://sepolia.etherscan.io/tx/${transactionHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            Etherscan
+          </a>
+        </p>
+      )}
     </div>
   );
 };

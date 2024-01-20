@@ -30,7 +30,6 @@ const config = createConfig(
     chains:chains,
   })
 );
-import Widget from "./components/Widget.jsx";
 import Payment from "./components/Payment.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -40,9 +39,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Router>
           <Routes>
             <Route path="/" element={<App />} />
-            <Route path="/:recipient" element={<Widget />} />
             <Route path="/pay/:paymentId" element={<Payment />} />
-
           </Routes>
         </Router>
       </ConnectKitProvider>

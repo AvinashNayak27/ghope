@@ -88,7 +88,6 @@ const getUserByEmail = async (email) => {
     if (user) {
       return user;
     } else {
-      res.send("No user found with that email.");
       return null;
     }
   } catch (error) {
@@ -176,6 +175,14 @@ app.get("/payment-ids-by-user", async (req, res) => {
   const user = await getUserByEmail(email);
   const paymentIDs = await getPaymentIDsByUser(user);
   res.send(paymentIDs);
+});
+
+app.get("/user", async (req, res) => {
+  const { _id } = req.query;
+  const user = await User.findById(_id);
+  if (user) {
+    res.send(user);
+  }
 });
 
 app.get("/payment-id", async (req, res) => {
