@@ -32,9 +32,17 @@ const userSchema = new Schema({
   paymentIDs: [paymentIDSchema], // Array of PaymentID documents
 });
 
+// Define the Buyer schema
+const buyerSchema = new Schema({
+  paymentID: { type: Schema.Types.ObjectId, ref: "PaymentID", required: true },
+  buyerEmail: { type: String, required: true },
+  txhash: { type: String, required: true },
+});
+
 // Create models
 const PaymentID = mongoose.model("PaymentID", paymentIDSchema);
 const User = mongoose.model("User", userSchema);
+const Buyer = mongoose.model("Buyer", buyerSchema);
 
 const createUser = async (email, walletAddress) => {
   try {
@@ -68,6 +76,15 @@ const createPaymentID = async (
       $push: { paymentIDs: paymentID },
     });
     return paymentID;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const createBuyer = async (paymentID, buyerEmail, txhash) => {
+  try {
+    const buyer = new Buyer({ paymentID, buyerEmail, txhash });
+    await buyer.save();
   } catch (error) {
     console.log(error);
   }
@@ -141,6 +158,19 @@ app.post("/create-payment-id", async (req, res) => {
   }
 });
 
+app.post("/create-buyer", async (req, res) => {
+  try {
+    const { paymentID, buyerEmail, txhash } = req.body;
+    const buyer = await createBuyer(paymentID, buyerEmail, txhash);
+    res.send(buyer);
+  } catch (error) {
+    console.error("Error occurred in /create-buyer:", error);
+    res
+      .status(500)
+      .send({ error: "An error occurred while creating the buyer." });
+  }
+});
+
 app.post("/update-user-wallet", async (req, res) => {
   const { email, walletAddress } = req.body;
   const user = await getUserByEmail(email);
@@ -194,4 +224,11 @@ app.get("/payment-id", async (req, res) => {
     res.send("No payment ID found with that UID.");
   }
 });
+
+app.get("/buyers-by-payment-id", async (req, res) => {
+  const { paymentID } = req.query;
+  const buyers = await Buyer.find({ paymentID: paymentID });
+  res.send(buyers);
+}
+);
 app.listen(3000, () => console.log("Server running on port 3000"));

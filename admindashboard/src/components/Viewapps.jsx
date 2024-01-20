@@ -4,7 +4,10 @@ import { useAuth } from "../AuthContext";
 import axios from "axios";
 
 const ProductCard = ({ product }) => {
+  const productLink = `/view-products/${product.uniquePaymentRef}`;
+
   return (
+    <a href={productLink} rel="noopener noreferrer">
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border-2 border-black">
       <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
         {product.productName}
@@ -21,6 +24,7 @@ const ProductCard = ({ product }) => {
 </p>
 
     </div>
+    </a>
   );
 };
 

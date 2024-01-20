@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { ConnectKitButton } from "connectkit";
 import { useAccount } from "wagmi";
-import { useContractWrite, usePrepareContractWrite, useWaitForTransaction } from "wagmi";
-
-const Widget = ({ amount, recipient, token }) => {
+import {
+  useContractWrite,
+  usePrepareContractWrite,
+  useWaitForTransaction,
+} from "wagmi";
+import axios from "axios";
+const Widget = ({ amount, recipient, token, paymentId }) => {
   const { isConnected } = useAccount();
   const isAmountEntered = amount && amount > 0;
 
@@ -36,8 +40,7 @@ const Widget = ({ amount, recipient, token }) => {
     },
   ];
 
-
-  const selectedTokenInfo = tokens['GHO'];
+  const selectedTokenInfo = tokens["GHO"];
   const isValidAmount = !isNaN(parseFloat(amount));
   const [email, setEmail] = useState("");
 
@@ -50,7 +53,9 @@ const Widget = ({ amount, recipient, token }) => {
           args: [
             recipient,
             // Ensure proper conversion to the correct decimal
-            (parseFloat(amount) * Math.pow(10, selectedTokenInfo.decimals)).toString(),
+            (
+              parseFloat(amount) * Math.pow(10, selectedTokenInfo.decimals)
+            ).toString(),
           ],
         }
       : undefined
@@ -78,10 +83,33 @@ const Widget = ({ amount, recipient, token }) => {
     }
   }, [error]);
 
+  const createBuyer = async () => {
+    if (data) {
+      try {
+        console.log("Transaction successful:", data);
+        const res = await axios.post(`http://localhost:3000/create-buyer`, {
+          paymentID: paymentId,
+          buyerEmail: email,
+          txhash: transactionHash,
+        });
+        console.log("Buyer created:", res.data);
+      } catch (error) {
+        console.error("Error creating buyer:", error.message);
+      }
+    }
+  };
+
+  useEffect(() => {
+    createBuyer();
+  }, [data]);
+  
   return (
     <div className="bg-gray-800 text-white border-gray-600 border rounded-lg shadow-lg p-6 max-w-md mx-auto">
       <div className="mb-4">
-        <label htmlFor="email" className="block text-sm font-medium text-gray-300">
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-gray-300"
+        >
           Email Address:
         </label>
         <input
@@ -100,7 +128,9 @@ const Widget = ({ amount, recipient, token }) => {
             <button
               onClick={show}
               className={`py-2 px-4 rounded-lg font-bold text-white w-full transition duration-300 ease-in-out ${
-                isConnected ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-500 hover:bg-blue-600"
+                isConnected
+                  ? "bg-blue-600 hover:bg-blue-700"
+                  : "bg-blue-500 hover:bg-blue-600"
               }`}
             >
               {isConnected ? `${truncatedAddress}` : "Connect Wallet"}
@@ -112,7 +142,9 @@ const Widget = ({ amount, recipient, token }) => {
       <div>
         <button
           className={`py-2 px-4 rounded-lg font-bold text-white w-full transition duration-300 ease-in-out ${
-            isConnected && isAmountEntered ? "bg-green-600 hover:bg-green-700" : "bg-green-500 hover:bg-green-600 opacity-50 cursor-not-allowed"
+            isConnected && isAmountEntered
+              ? "bg-green-600 hover:bg-green-700"
+              : "bg-green-500 hover:bg-green-600 opacity-50 cursor-not-allowed"
           }`}
           disabled={!isConnected || !isAmountEntered}
           onClick={handleTransactionSubmit}

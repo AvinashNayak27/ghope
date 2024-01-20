@@ -46,6 +46,7 @@ function Payment() {
           amount={paymentDetails.amount}
           token={paymentDetails.token}
           recipient={paymentDetails.owner.walletAddress}
+          paymentId={paymentDetails._id}
         />
         </div>
       </div>

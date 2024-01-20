@@ -6,6 +6,7 @@ import {
   smartWallet,
   embeddedWallet,
   localWallet,
+  RouterTypeInput,
 } from "@thirdweb-dev/react";
 import { Sepolia } from "@thirdweb-dev/chains";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -22,6 +23,7 @@ const smartWalletOptions = {
 };
 
 const baseURL = "http://localhost:3000";
+import View from "./components/View.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -65,6 +67,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <Route path="/create" element={<CreateAppForm />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/view-products" element={<Viewapps />} />
+            <Route path="/view-products/:id" element={<View />} />
           </Routes>
         </Router>
       </AuthProvider>
