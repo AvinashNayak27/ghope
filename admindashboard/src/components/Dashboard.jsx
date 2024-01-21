@@ -102,7 +102,7 @@ const Dashboard = () => {
                     action={() => setShowInput(true)}
                     isDisabled={tokenInfo?.displayValue === "0.0"}
                   >
-                    Transfer Tokens
+                    Withdraw
                   </Web3Button>
                 )}
                 {isLoading && (
