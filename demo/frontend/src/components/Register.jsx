@@ -12,7 +12,7 @@ function RegistrationPage() {
     setError("");
 
     try {
-      const response = await axios.post(`http://localhost:3000/register`, {
+      const response = await axios.post(`https://coursebackend.fly.dev/register`, {
         email,
         password,
       });

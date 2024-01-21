@@ -12,11 +12,11 @@ const Dashboard = () => {
 
   const userDatais = async () => {
     const response = await axios.get(
-      `http://localhost:3000/user-by-email?email=${email}`
+      `https://ghopebackend.fly.dev/user-by-email?email=${email}`
     );
     if (response.data.walletAddress !== address) {
       const updateResponse = await axios.post(
-        `http://localhost:3000/update-user-wallet`,
+        `https://ghopebackend.fly.dev/update-user-wallet`,
         {
           email,
           walletAddress: address,

@@ -6,6 +6,7 @@ import { BrowserRouter as Router,Route,Routes } from 'react-router-dom'
 import LoginPage from './components/Login.jsx'
 import CoursePage from './components/Course.jsx'
 import RegistrationPage from './components/Register.jsx'
+import Notfound from './components/Notfound.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -15,6 +16,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/login" element={<LoginPage />} />
         <Route path="/courses" element={<CoursePage />} />
         <Route path="/register" element={<RegistrationPage />} />
+        <Route path="*" element={<Notfound />} />
       </Routes>
     </Router>
   </React.StrictMode>,

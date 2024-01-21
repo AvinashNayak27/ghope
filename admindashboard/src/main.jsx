@@ -6,7 +6,6 @@ import {
   smartWallet,
   embeddedWallet,
   localWallet,
-  RouterTypeInput,
 } from "@thirdweb-dev/react";
 import { Sepolia } from "@thirdweb-dev/chains";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -22,7 +21,7 @@ const smartWalletOptions = {
   gasless: true,
 };
 
-const baseURL = "http://localhost:3000";
+const baseURL = "https://ghopebackend.fly.dev";
 import View from "./components/View.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -38,22 +37,23 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               options: ["email", "google"],
             },
             onAuthSuccess: async (user) => {
-              const email = user.storedToken.authDetails.email;
-              const walletAddress = user.walletDetails.walletAddress
+              console.log("User logged in:", user);
+              const email = user?.storedToken?.authDetails?.email;
+              const walletAddress = user?.walletDetails?.walletAddress;
 
               const userExists = await axios.get(
                 `${baseURL}/user-exists?email=${email}`
               );
 
-              if (userExists.data) {
-                return;
-              }
+              console.log("User exists:", userExists.data);
 
-              const response = await axios.post(`${baseURL}/create-user`, {
-                email,
-                walletAddress,
-              });
-              console.log("User created:", response.data);
+              if (!userExists?.data) {
+                const response = await axios.post(`${baseURL}/create-user`, {
+                  email,
+                  walletAddress,
+                });
+                console.log("User created:", response.data);
+              }
             },
           }),
           smartWalletOptions

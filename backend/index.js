@@ -4,9 +4,11 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 const cors = require("cors");
 
+//eru0ZV5kglolwi4O
+
 const connectDB = async () => {
   try {
-    await mongoose.connect("mongodb://localhost:27017/ghope");
+    await mongoose.connect("mongodb+srv://ghope:eru0ZV5kglolwi4O@cluster0.gfqgvm9.mongodb.net/?retryWrites=true&w=majority");
     console.log("MongoDB connected");
   } catch (error) {
     console.log(error);
@@ -23,6 +25,8 @@ const paymentIDSchema = new Schema({
   token: { type: String, required: true },
   network: { type: String, required: true },
   uniquePaymentRef: { type: String, required: true, unique: true },
+  redirectURL: { type: String, required: true },
+  webhookURL: { type: String, required: true },
 });
 
 // Define the User schema
@@ -60,7 +64,9 @@ const createPaymentID = async (
   amount,
   token,
   network,
-  uid
+  uid,
+  redirectURL,
+  webhookURL
 ) => {
   try {
     const paymentID = new PaymentID({
@@ -70,6 +76,8 @@ const createPaymentID = async (
       token,
       network,
       uniquePaymentRef: uid,
+      redirectURL,
+      webhookURL,
     });
     await paymentID.save();
     await User.findByIdAndUpdate(owner, {
@@ -115,7 +123,9 @@ const getUserByEmail = async (email) => {
 
 const getPaymentIDsByUser = async (user) => {
   try {
+    console.log(user);
     const paymentIDs = await PaymentID.find({ owner: user._id });
+    console.log(paymentIDs);
     return paymentIDs;
   } catch (error) {
     console.log(error);
@@ -137,14 +147,16 @@ app.post("/create-user", async (req, res) => {
 
 app.post("/create-payment-id", async (req, res) => {
   try {
-    const { productName, owner, amount, token, network, uid } = req.body;
+    const { productName, owner, amount, token, network, uid ,redirectURL,webhookURL} = req.body;
     const paymentID = await createPaymentID(
       productName,
       owner,
       amount,
       token,
       network,
-      uid
+      uid,
+      redirectURL,
+      webhookURL
     );
     res.send(paymentID);
   } catch (error) {
@@ -172,11 +184,27 @@ app.post("/create-buyer", async (req, res) => {
 });
 
 app.post("/update-user-wallet", async (req, res) => {
-  const { email, walletAddress } = req.body;
-  const user = await getUserByEmail(email);
-  user.walletAddress = walletAddress;
-  await user.save();
-  res.send(user);
+  try {
+    const { email, walletAddress } = req.body;
+    if (!email || !walletAddress) {
+      return res.status(400).send("Email and walletAddress are required.");
+    }
+
+    const user = await getUserByEmail(email);
+
+    if (!user) {
+      return res.status(404).send("No user found with that email.");
+    }
+
+    user.walletAddress = walletAddress;
+
+    await user.save();
+    res.send(user);
+  } catch (error) {
+    // Handle any unexpected errors
+    console.error("Error updating user wallet:", error);
+    res.status(500).send("Internal Server Error");
+  }
 });
 
 app.get("/users", async (req, res) => {
@@ -229,6 +257,5 @@ app.get("/buyers-by-payment-id", async (req, res) => {
   const { paymentID } = req.query;
   const buyers = await Buyer.find({ paymentID: paymentID });
   res.send(buyers);
-}
-);
+});
 app.listen(3000, () => console.log("Server running on port 3000"));

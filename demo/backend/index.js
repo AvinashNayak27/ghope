@@ -22,7 +22,7 @@ const bcrypt = require("bcryptjs");
 
 const connectDB = async () => {
   try {
-    await mongoose.connect("mongodb://localhost:27017/courses");
+    await mongoose.connect("mongodb+srv://bablu:J9WLADsG4uycd0C2@cluster0.n4sxtlq.mongodb.net/?retryWrites=true&w=majority");
     console.log("MongoDB connected");
   } catch (error) {
     console.log(error);
@@ -58,9 +58,27 @@ userSchema.pre("save", async function (next) {
 
 const User = mongoose.model("User", userSchema);
 
+const transactionSchema = new mongoose.Schema({
+  txHash: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  isClaimed: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+const Transaction = mongoose.model("Transaction", transactionSchema);
+
 // User registration
 app.post("/register", async (req, res) => {
   try {
+    const existingUser = await User.findOne({ email: req.body.email });
+    if (existingUser) {
+      return res.status(409).send({ message: "User already exists" });
+    }
     let user = new User(req.body);
     await user.save();
     res.status(201).send({ message: "User created successfully" });
@@ -99,47 +117,74 @@ app.get("/profile", async (req, res) => {
 app.post("/webhook", async (req, res) => {
   const { txHash, email } = req.body;
 
+  // Check for missing fields
+  if (!txHash || !email) {
+    return res.status(400).send("Missing transaction hash or email");
+  }
+
   try {
+    // Check if the user exists in the database
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+
+    // Fetch transaction receipt
     const tx = await alchemy.core.getTransactionReceipt(txHash);
+    if (!tx) {
+      return res.status(404).send("Transaction not found");
+    }
 
     // Accessing the data
     const transaction = tx.logs[0];
-    const topics = transaction.topics;
-    const data = transaction.data;
-
-    // Converting data from hex to decimal
-    function hexToDecimal(hexString) {
-      return BigInt(hexString).toString(10);
+    if (!transaction) {
+      return res.status(400).send("Transaction logs not found");
     }
 
-    const tokenAddress = transaction?.address;
+    const { topics, data, address: tokenAddress } = transaction;
+
+    // Converting data from hex to decimal
+    const hexToDecimal = (hexString) => BigInt(hexString).toString(10);
+
     const from = `0x${topics[1].slice(26)}`;
     const to = `0x${topics[2].slice(26)}`;
     const value = hexToDecimal(data) / 10 ** 18;
 
     // Validation
     if (
-      to.toLowerCase() === "0xffe6903b2709560ee232b3380dc210d0db486aa1" &&
       value === 10 &&
-      tokenAddress.toLowerCase() ===
-        "0xc4bf5cbdabe595361438f8c6a187bdc330539c60"
+      tokenAddress.toLowerCase() === "0xc4bf5cbdabe595361438f8c6a187bdc330539c60"
     ) {
       console.log(`Email: ${email}`);
-      const user = await User.findOne({ email: email });
-      user.isPro = true;
-      await user.save();
-      console.log("User updated");
 
-      res.status(200).send("Webhook validated successfully!");
+      let transaction = await Transaction.findOne({ txHash: txHash });
+      if (!transaction) {
+        transaction = new Transaction({ txHash: txHash });
+      }
+
+      if (!transaction.isClaimed) {
+        user.isPro = true;
+        await user.save();
+        console.log("User updated");
+
+        transaction.isClaimed = true;
+        await transaction.save();
+        console.log("Transaction updated");
+
+        return res.status(200).send("Webhook validated successfully!");
+      } else {
+        return res.status(200).send("Transaction already claimed");
+      }
     } else {
       // Conditions are not met
-      res.status(400).send("Validation failed!");
+      return res.status(400).send("Validation failed!");
     }
   } catch (error) {
     console.error("Error processing webhook:", error);
-    res.status(500).send("Internal Server Error");
+    return res.status(500).send("Internal Server Error");
   }
 });
+
 
 app.listen(port, () => {
   console.log(`server is listening at http://localhost:${port}`);

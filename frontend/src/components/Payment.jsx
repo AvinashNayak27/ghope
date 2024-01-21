@@ -10,9 +10,10 @@ function Payment() {
 
   const getPaymentDetails = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/payment-id?uid=${paymentId}`);
+      const response = await axios.get(`https://ghopebackend.fly.dev/payment-id?uid=${paymentId}`);
       setPaymentDetails(response.data);
-      const owner = await axios.get(`http://localhost:3000/user?_id=${response.data.owner}`);
+      console.log("Payment details:", response.data);
+      const owner = await axios.get(`https://ghopebackend.fly.dev/user?_id=${response.data.owner}`);
       setPaymentDetails((prev) => ({ ...prev, owner: owner.data }));
     } catch (error) {
       console.error("Error fetching payment details:", error);
@@ -47,6 +48,8 @@ function Payment() {
           token={paymentDetails.token}
           recipient={paymentDetails.owner.walletAddress}
           paymentId={paymentDetails._id}
+          redirectURL={paymentDetails.redirectURL}
+          webhookURL={paymentDetails.webhookURL}
         />
         </div>
       </div>

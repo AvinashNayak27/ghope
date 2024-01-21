@@ -11,11 +11,11 @@ const CreateAppForm = () => {
 
   const userDatais = async () => {
     const response = await axios.get(
-      `http://localhost:3000/user-by-email?email=${email}`
+      `https://ghopebackend.fly.dev/user-by-email?email=${email}`
     );
     if (response.data.walletAddress != address) {
       const response = await axios.post(
-        `http://localhost:3000/update-user-wallet`,
+        `https://ghopebackend.fly.dev/update-user-wallet`,
         {
           email,
           walletAddress: address,
@@ -36,6 +36,8 @@ const CreateAppForm = () => {
     amount: "",
     token: "GHO",
     network: "Sepolia",
+    redirectURL: "",
+    webhookURL: "",
   });
 
   const handleChange = (e) => {
@@ -44,7 +46,7 @@ const CreateAppForm = () => {
 
   const getUser = async () => {
     const response = await axios.get(
-      `http://localhost:3000/user-by-email?email=${email}`
+      `https://ghopebackend.fly.dev/user-by-email?email=${email}`
     );
     console.log(response?.data);
 
@@ -57,11 +59,13 @@ const CreateAppForm = () => {
     amount,
     token,
     network,
-    uid
+    uid,
+    redirectURL,
+    webhookURL
   ) => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/create-payment-id",
+        "https://ghopebackend.fly.dev/create-payment-id",
         {
           productName,
           owner,
@@ -69,6 +73,8 @@ const CreateAppForm = () => {
           token,
           network,
           uid,
+          redirectURL,
+          webhookURL,
         }
       );
       console.log("PaymentID created:", response.data);
@@ -80,7 +86,7 @@ const CreateAppForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { appName, amount, token, network } = formData;
+    const { appName, amount, token, network,redirectURL,webhookURL } = formData;
     console.log(formData);
     const uniquepaymentId = uuidv4();
     const user = await getUser();
@@ -91,7 +97,9 @@ const CreateAppForm = () => {
         amount,
         token,
         network,
-        uniquepaymentId
+        uniquepaymentId,
+        redirectURL,
+        webhookURL
       );
 
       if (paymentId) {
@@ -204,6 +212,44 @@ const CreateAppForm = () => {
                   </option>
                 ))}
               </select>
+            </div>
+          </div>
+          <div className="mb-4">
+            <div className="flex items-center">
+              <label
+                className="w-1/6 block uppercase tracking-wide text-gray-200 text-xs font-bold mr-2"
+                htmlFor="redirectURL"
+              >
+                Redirect URL
+              </label>
+              <input
+                className="w-5/6 appearance-none block bg-gray-700 text-white border rounded py-3 px-4 leading-tight focus:outline-none focus:bg-gray-600"
+                id="redirectURL"
+                type="text"
+                placeholder="Redirect URL"
+                name="redirectURL"
+                value={formData.redirectURL}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+          <div className="mb-4">
+            <div className="flex items-center">
+              <label
+                className="w-1/6 block uppercase tracking-wide text-gray-200 text-xs font-bold mr-2"
+                htmlFor="webhookURL"
+              >
+                Webhook URL
+              </label>
+              <input
+                className="w-5/6 appearance-none block bg-gray-700 text-white border rounded py-3 px-4 leading-tight focus:outline-none focus:bg-gray-600"
+                id="webhookURL"
+                type="text"
+                placeholder="Webhook URL"
+                name="webhookURL"
+                value={formData.webhookURL}
+                onChange={handleChange}
+              />
             </div>
           </div>
           <div className="flex justify-center">

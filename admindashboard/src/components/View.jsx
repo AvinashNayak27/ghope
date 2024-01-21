@@ -11,7 +11,7 @@ function View() {
   const getProductDetails = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/payment-id?uid=${id}`
+        `https://ghopebackend.fly.dev/payment-id?uid=${id}`
       );
       setProduct(response.data);
       console.log(response.data);
@@ -24,7 +24,7 @@ function View() {
   const getBuyerDetails = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/buyers-by-payment-id?paymentID=${product?._id}`
+        `https://ghopebackend.fly.dev/buyers-by-payment-id?paymentID=${product?._id}`
       );
       console.log(response.data);
         setBuyers(response.data);
@@ -62,7 +62,7 @@ function View() {
         <p className="text-gray-700 dark:text-gray-300">
           Payment Ref:{" "}
           <a
-            href={`http://localhost:5173/pay/${product?.uniquePaymentRef}`}
+            href={`https://ghope.vercel.app/pay/${product?.uniquePaymentRef}`}
             target="_blank"
           >
             {product.uniquePaymentRef}

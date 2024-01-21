@@ -7,7 +7,14 @@ import {
   useWaitForTransaction,
 } from "wagmi";
 import axios from "axios";
-const Widget = ({ amount, recipient, token, paymentId }) => {
+const Widget = ({
+  amount,
+  recipient,
+  token,
+  paymentId,
+  redirectURL,
+  webhookURL,
+}) => {
   const { isConnected } = useAccount();
   const isAmountEntered = amount && amount > 0;
 
@@ -87,7 +94,7 @@ const Widget = ({ amount, recipient, token, paymentId }) => {
     if (data) {
       try {
         console.log("Transaction successful:", data);
-        const res = await axios.post(`http://localhost:3000/create-buyer`, {
+        const res = await axios.post(`https://ghopebackend.fly.dev/create-buyer`, {
           paymentID: paymentId,
           buyerEmail: email,
           txhash: transactionHash,
@@ -99,10 +106,26 @@ const Widget = ({ amount, recipient, token, paymentId }) => {
     }
   };
 
+  const sendWebhook = async () => {
+    if (data) {
+      try {
+        console.log("Transaction successful:", data);
+        const res = await axios.post(webhookURL, {
+          txHash: transactionHash,
+          email: email,
+        });
+        console.log("Webhook sent:", res.data);
+      } catch (error) {
+        console.error("Error sending webhook:", error.message);
+      }
+    }
+  };
+
   useEffect(() => {
     createBuyer();
+    sendWebhook();
   }, [data]);
-  
+
   return (
     <div className="bg-gray-800 text-white border-gray-600 border rounded-lg shadow-lg p-6 max-w-md mx-auto">
       <div className="mb-4">
@@ -156,17 +179,22 @@ const Widget = ({ amount, recipient, token, paymentId }) => {
       {isLoading && <div>Processing…</div>}
       {isError && <div>Transaction error</div>}
       {data && (
-        <p className="text-green-600">
-          Transaction successful! View on{" "}
-          <a
-            href={`https://sepolia.etherscan.io/tx/${transactionHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline"
-          >
-            Etherscan
+        <>
+          <p className="text-green-600">
+            Transaction successful! View on{" "}
+            <a
+              href={`https://sepolia.etherscan.io/tx/${transactionHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              Etherscan
+            </a>
+          </p>
+          <a href={redirectURL} className="text-green-600">
+            <button>Redirect to Merchant Website</button>
           </a>
-        </p>
+        </>
       )}
     </div>
   );
